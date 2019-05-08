@@ -15,7 +15,6 @@ public class Server extends WebSocketServer {
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         socket = webSocket;
-        System.out.println(socket.getRemoteSocketAddress().getAddress().getHostAddress());
     }
 
     @Override

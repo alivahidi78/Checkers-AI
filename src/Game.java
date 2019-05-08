@@ -1,4 +1,3 @@
-import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -28,6 +27,7 @@ class Game {
 
     void run() {
         Server server = new Server();
+        server.start();
 //        while (!isGameFinished()) {
 //            String s = scanner.next();
 //            String[] moveStr = s.split(",");
