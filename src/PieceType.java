@@ -1,7 +1,7 @@
 import org.json.simple.JSONObject;
 
 public enum PieceType {
-    WHITE_MAN, BLACK_MAN, WHITE_KING, BLACK_KING;
+    BLANK, WHITE_MAN, BLACK_MAN, WHITE_KING, BLACK_KING;
 
     public JSONObject toJSON() {
         String type = "null";

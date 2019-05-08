@@ -1,13 +1,8 @@
+import org.java_websocket.server.WebSocketServer;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Scanner;
+import java.util.Arrays;
 
 class Game {
     private PieceType[][] pieces = new PieceType[8][8];
@@ -19,6 +14,8 @@ class Game {
     }
 
     private void initiate() {
+        for (PieceType[] pieceRow : pieces)
+            Arrays.fill(pieceRow, PieceType.BLANK);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 8; j++)
                 if ((i + j) % 2 == 1)
@@ -30,28 +27,17 @@ class Game {
     }
 
     void run() {
-        try {
-            ServerSocket serverSocket = new ServerSocket( 12345);
-            Socket socket = serverSocket.accept();
-            OutputStream os = socket.getOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(os);
-            InputStream is = socket.getInputStream();
-            Scanner scanner = new Scanner(is);
-            while (!isGameFinished()) {
-                String s = scanner.next();
-                String[] moveStr = s.split(",");
-                int[] move = new int[4];
-                for (int i = 0; i < 4; i++) {
-                    String c = moveStr[i];
-                    move[i] = Integer.parseInt(c);
-                }
-                processMove(move);
-                JSONObject board = collectBoard();
-                oos.writeObject(board);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Server server = new Server();
+//        while (!isGameFinished()) {
+//            String s = scanner.next();
+//            String[] moveStr = s.split(",");
+//            int[] move = new int[4];
+//            for (int i = 0; i < 4; i++)
+//                move[i] = Integer.parseInt(moveStr[i]);
+//            processMove(move);
+//            JSONObject board = collectBoard();
+//            oos.writeObject(board);
+//        }
     }
 
     private JSONObject collectBoard() {
@@ -70,44 +56,43 @@ class Game {
         return jsonObject;
     }
 
-    private void processMove(int[] move) {
-        move(move[0], move[1], move[2], move[3]);
-    }
-
-
     private boolean isGameFinished() {
         return false;//TODO
     }
 
-    private void move(int row1, int col1, int row2, int col2) {
+    private void processMove(int[] move) {
+        processMove(move[0], move[1], move[2], move[3]);
+    }
+
+    private void processMove(int row1, int col1, int row2, int col2) {
         PieceType p = pieces[row1][col1];
         pieces[row2][col2] = p;
-        pieces[row1][col1] = null;
+        pieces[row1][col1] = PieceType.BLANK;
         if (row2 - row1 == 2) {
             if (col2 - col1 == 2)
-                pieces[row1 + 1][col1 + 1] = null;
+                pieces[row1 + 1][col1 + 1] = PieceType.BLANK;
             else
-                pieces[row1 + 1][col1 - 1] = null;
+                pieces[row1 + 1][col1 - 1] = PieceType.BLANK;
         } else if (row2 - row1 == -2) {
             if (col2 - col1 == 2)
-                pieces[row1 - 1][col1 + 1] = null;
+                pieces[row1 - 1][col1 + 1] = PieceType.BLANK;
             else
-                pieces[row1 - 1][col1 - 1] = null;
+                pieces[row1 - 1][col1 - 1] = PieceType.BLANK;
         }
     }
 
-    private void printBoard() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                PieceType p = pieces[i][j];
-                if (p == null)
-                    System.out.print("0 ");
-                else if (p == PieceType.BLACK_MAN)
-                    System.out.print("1 ");
-                else if (p == PieceType.WHITE_MAN)
-                    System.out.print("2 ");
-            }
-            System.out.println();
-        }
-    }
+//    private void printBoard() {
+//        for (int i = 0; i < 8; i++) {
+//            for (int j = 0; j < 8; j++) {
+//                PieceType p = pieces[i][j];
+//                if (p == null)
+//                    System.out.print("0 ");
+//                else if (p == PieceType.BLACK_MAN)
+//                    System.out.print("1 ");
+//                else if (p == PieceType.WHITE_MAN)
+//                    System.out.print("2 ");
+//            }
+//            System.out.println();
+//        }
+//    }
 }
