@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -30,7 +31,8 @@ class Game {
 
     void run() {
         try {
-            Socket socket = new Socket("localhost", 12345);
+            ServerSocket serverSocket = new ServerSocket( 12345);
+            Socket socket = serverSocket.accept();
             OutputStream os = socket.getOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(os);
             InputStream is = socket.getInputStream();
