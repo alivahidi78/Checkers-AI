@@ -7,12 +7,11 @@ import checkers.util.Color;
 import checkers.util.Move;
 import checkers.util.PieceType;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 
 public class Game {
-    private PieceType[][] pieces;
+    private PieceType[][] board;
     private Player turn;
     private LinkedList<Move> whitePotentialMoves;
     private LinkedList<Move> blackPotentialMoves;
@@ -20,7 +19,7 @@ public class Game {
     private Player player2;
 
     Game(Color playerColor, boolean isPvN) {
-        pieces = new PieceType[8][8];
+        board = new PieceType[8][8];
         whitePotentialMoves = new LinkedList<>();
         blackPotentialMoves = new LinkedList<>();
         player1 = new HumanPlayer(this, "Player1", playerColor);
@@ -31,16 +30,16 @@ public class Game {
     }
 
     private void initiate() {
-        for (PieceType[] pieceRow : pieces)
+        for (PieceType[] pieceRow : board)
             Arrays.fill(pieceRow, PieceType.BLANK);
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 8; j++)
                 if ((i + j) % 2 == 1)
-                    pieces[i][j] = PieceType.BLACK_MAN;
+                    board[i][j] = PieceType.BLACK_MAN;
         for (int i = 5; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 if ((i + j) % 2 == 1)
-                    pieces[i][j] = PieceType.WHITE_MAN;
+                    board[i][j] = PieceType.WHITE_MAN;
         turn = player1.color == Color.BLACK ? player1 : player2;
     }
 
@@ -61,19 +60,19 @@ public class Game {
     }
 
     private void move(Move move) {
-        PieceType p = pieces[move.fromRow][move.fromCol];
-        pieces[move.toRow][move.toCol] = p;
-        pieces[move.fromRow][move.fromCol] = PieceType.BLANK;
+        PieceType p = board[move.fromRow][move.fromCol];
+        board[move.toRow][move.toCol] = p;
+        board[move.fromRow][move.fromCol] = PieceType.BLANK;
         if (move.toRow - move.fromRow == 2) {
             if (move.toCol - move.fromCol == 2)
-                pieces[move.fromRow + 1][move.fromCol + 1] = PieceType.BLANK;
+                board[move.fromRow + 1][move.fromCol + 1] = PieceType.BLANK;
             else
-                pieces[move.fromRow + 1][move.fromCol - 1] = PieceType.BLANK;
+                board[move.fromRow + 1][move.fromCol - 1] = PieceType.BLANK;
         } else if (move.toRow - move.fromRow == -2) {
             if (move.toCol - move.fromCol == 2)
-                pieces[move.fromRow - 1][move.fromCol + 1] = PieceType.BLANK;
+                board[move.fromRow - 1][move.fromCol + 1] = PieceType.BLANK;
             else
-                pieces[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
+                board[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
         }
     }
 
@@ -82,7 +81,30 @@ public class Game {
     }
 
     private boolean canMove(Move move) {
-
+        if (move.fromRow < 0 || move.fromRow > 7 || move.toRow < 0 || move.toRow > 7)
+            return false;
+        if (move.fromCol < 0 || move.fromCol > 7 || move.toCol < 0 || move.toCol > 7)
+            return false;
+        if (turn.color != board[move.fromRow][move.fromCol].getColor())
+            return false;
+        if (Math.abs(move.fromCol - move.toCol) != Math.abs(move.fromRow - move.toRow))
+            return false;
+        if (Math.abs(move.fromRow - move.toRow) > 2)
+            return false;
+        if (board[move.fromRow][move.fromCol] == PieceType.BLACK_MAN &&
+                move.toRow < move.fromRow)
+            return false;
+        if (board[move.fromRow][move.fromCol] == PieceType.WHITE_MAN &&
+                move.toRow > move.fromRow)
+            return false;
+        if (board[move.toRow][move.toCol] != PieceType.BLANK)
+            return false;
+        if (Math.abs(move.fromRow - move.toRow) == 2) {
+            int midRow = (move.toRow - move.fromRow) / 2 + move.fromRow;
+            int midCol = (move.toCol - move.fromCol) / 2 + move.fromCol;
+            if (board[midRow][midCol].getColor() != turn.color.not())
+                return false;
+        }
         return true;
     }
 
@@ -106,7 +128,7 @@ public class Game {
         for (int i = 0; i < 8; i++) {
             System.out.print("" + i + "\t ");
             for (int j = 0; j < 8; j++) {
-                PieceType p = pieces[i][j];
+                PieceType p = board[i][j];
                 if ((i + j) % 2 == 0)
                     System.out.print("\u001B[47m");
                 if (p == PieceType.BLANK)
@@ -131,7 +153,7 @@ public class Game {
 //        for (int i = 0; i < 8; i++) {
 //            JSONArray row = new JSONArray();
 //            for (int j = 0; j < 8; j++) {
-//                row.add(pieces[i][j].toJSON());
+//                row.add(board[i][j].toJSON());
 //            }
 //            board.add(row);
 //        }
