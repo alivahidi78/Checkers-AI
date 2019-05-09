@@ -7,6 +7,7 @@ import checkers.util.Color;
 import checkers.util.Move;
 import checkers.util.PieceType;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 
@@ -81,7 +82,7 @@ public class Game {
     }
 
     private boolean canMove(Move move) {
-        //TODO
+
         return true;
     }
 
@@ -98,20 +99,27 @@ public class Game {
     }
 
     private void printBoard() {
-        System.out.print("\t|");
+        System.out.print("\t ");
         for (int i = 0; i < 8; i++)
-            System.out.print("" + i + "|");
+            System.out.print(" " + i + " ");
         System.out.println("\n");
         for (int i = 0; i < 8; i++) {
-            System.out.print("" + i + "\t|");
+            System.out.print("" + i + "\t ");
             for (int j = 0; j < 8; j++) {
                 PieceType p = pieces[i][j];
+                if ((i + j) % 2 == 0)
+                    System.out.print("\u001B[47m");
                 if (p == PieceType.BLANK)
-                    System.out.print(" |");
+                    System.out.print("   ");
                 else if (p == PieceType.BLACK_MAN)
-                    System.out.print("1|");
+                    System.out.print("\u001B[34m" + " M" + "\u001B[0m" + " ");
                 else if (p == PieceType.WHITE_MAN)
-                    System.out.print("2|");
+                    System.out.print("\u001B[32m" + " M" + "\u001B[0m" + " ");
+                else if (p == PieceType.BLACK_KING)
+                    System.out.print("\u001B[34m" + " K" + "\u001B[0m" + " ");
+                else if (p == PieceType.WHITE_KING)
+                    System.out.print("\u001B[32m" + " K" + "\u001B[0m" + " ");
+                System.out.print("\u001B[0m");
             }
             System.out.println();
         }
