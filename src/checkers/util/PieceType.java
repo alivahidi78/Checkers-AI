@@ -1,3 +1,5 @@
+package checkers.util;
+
 import org.json.simple.JSONObject;
 
 public enum PieceType {
