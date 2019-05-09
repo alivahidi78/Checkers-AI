@@ -18,6 +18,7 @@ public class Game {
     private List<Move> blackPotentialMoves;
     private List<Move> whitePotentialJumps;
     private List<Move> blackPotentialJumps;
+    private Move lastMove;
     private Player player1;
     private Player player2;
     private Color winner;
@@ -28,6 +29,7 @@ public class Game {
         blackPotentialMoves = new ArrayList<>();
         whitePotentialJumps = new ArrayList<>();
         blackPotentialJumps = new ArrayList<>();
+        lastMove = new Move(-1, -1, -1, -1);
         player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
         if (isPvN)
             player2 = new AIPlayer(this, "Computer", playerColor.not());
@@ -65,6 +67,7 @@ public class Game {
             updatePotentialMoves();
             updateTurn();
         }
+        printBoard();
         System.out.println(winner + " WINS!");
     }
 
@@ -72,6 +75,7 @@ public class Game {
         if (turn.color == Color.BLACK && blackPotentialJumps.isEmpty() &&
                 blackPotentialMoves.isEmpty()) {
             winner = Color.WHITE;
+
             return true;
         }
         if (turn.color == Color.WHITE && whitePotentialJumps.isEmpty() &&
@@ -96,12 +100,12 @@ public class Game {
         }
     }
 
-    private boolean canMove(int fromRow, int fromCol, int toRow, int toCol) {
+    private boolean canMove(Color color, int fromRow, int fromCol, int toRow, int toCol) {
         if (fromRow < 0 || fromRow > 7 || toRow < 0 || toRow > 7)
             return false;
         if (fromCol < 0 || fromCol > 7 || toCol < 0 || toCol > 7)
             return false;
-        if (turn.color != board[fromRow][fromCol].getColor())
+        if (color != board[fromRow][fromCol].getColor())
             return false;
         if (Math.abs(fromCol - toCol) != Math.abs(fromRow - toRow))
             return false;
@@ -118,7 +122,7 @@ public class Game {
         if (Math.abs(fromRow - toRow) == 2) {
             int midRow = (toRow - fromRow) / 2 + fromRow;
             int midCol = (toCol - fromCol) / 2 + fromCol;
-            if (board[midRow][midCol].getColor() != turn.color.not())
+            if (board[midRow][midCol].getColor() != color.not())
                 return false;
         }
         return true;
@@ -143,12 +147,15 @@ public class Game {
             board[move.toRow][move.toCol] = PieceType.WHITE_KING;
         if (turn.color == Color.BLACK && move.toRow == 7)
             board[move.toRow][move.toCol] = PieceType.BLACK_KING;
+        lastMove = move;
     }
 
     private void updateTurn() {
-        if (turn.color == Color.BLACK && !blackPotentialJumps.isEmpty())
+        if (Math.abs(lastMove.toCol - lastMove.fromCol) == 2 &&
+                turn.color == Color.BLACK && !blackPotentialJumps.isEmpty())
             return;
-        if (turn.color == Color.WHITE && !whitePotentialJumps.isEmpty())
+        if (Math.abs(lastMove.toCol - lastMove.fromCol) == 2 &&
+                turn.color == Color.WHITE && !whitePotentialJumps.isEmpty())
             return;
         if (turn == player1)
             turn = player2;
@@ -182,17 +189,16 @@ public class Game {
         int[] jDest = new int[]{j + 1, j - 1};
         for (int k : iDest)
             for (int w : jDest)
-                if (canMove(i, j, k, w))
+                if (canMove(color, i, j, k, w))
                     potentialMoves.add(new Move(i, j, k, w));
         iDest = new int[]{i + 2, i - 2};
         jDest = new int[]{j + 2, j - 2};
         for (int k : iDest)
             for (int w : jDest)
-                if (canMove(i, j, k, w)) {
+                if (canMove(color, i, j, k, w)) {
                     potentialJumps.add(new Move(i, j, k, w));
                 }
     }
-
 
     private void printBoard() {
         System.out.print("\t ");
@@ -205,16 +211,19 @@ public class Game {
                 PieceType p = board[i][j];
                 if ((i + j) % 2 == 0)
                     System.out.print("\u001B[47m");
+                else if ((i == lastMove.fromRow && j == lastMove.fromCol) ||
+                        i == lastMove.toRow && j == lastMove.toCol)
+                    System.out.print("\033[43m");
                 if (p == PieceType.BLANK)
                     System.out.print("   ");
                 else if (p == PieceType.BLACK_MAN)
-                    System.out.print("\u001B[34m" + " M" + "\u001B[0m" + " ");
+                    System.out.print("\033[1;34m" + " M ");
                 else if (p == PieceType.WHITE_MAN)
-                    System.out.print("\u001B[32m" + " M" + "\u001B[0m" + " ");
+                    System.out.print("\033[1;31m" + " M ");
                 else if (p == PieceType.BLACK_KING)
-                    System.out.print("\u001B[34m" + " K" + "\u001B[0m" + " ");
+                    System.out.print("\033[1;34m" + " K ");
                 else if (p == PieceType.WHITE_KING)
-                    System.out.print("\u001B[32m" + " K" + "\u001B[0m" + " ");
+                    System.out.print("\033[1;31m" + " K ");
                 System.out.print("\u001B[0m");
             }
             System.out.print("\t" + (i + 1));
