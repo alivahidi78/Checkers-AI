@@ -7,26 +7,33 @@ import checkers.util.Color;
 import checkers.util.Move;
 import checkers.util.PieceType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.List;
 
 public class Game {
     private PieceType[][] board;
     private Player turn;
-    private LinkedList<Move> whitePotentialMoves;
-    private LinkedList<Move> blackPotentialMoves;
+    private List<Move> whitePotentialMoves;
+    private List<Move> blackPotentialMoves;
+    private List<Move> whitePotentialJumps;
+    private List<Move> blackPotentialJumps;
     private Player player1;
     private Player player2;
+    private Color winner;
 
     Game(Color playerColor, boolean isPvN) {
         board = new PieceType[8][8];
-        whitePotentialMoves = new LinkedList<>();
-        blackPotentialMoves = new LinkedList<>();
-        player1 = new HumanPlayer(this, "Player1", playerColor);
+        whitePotentialMoves = new ArrayList<>();
+        blackPotentialMoves = new ArrayList<>();
+        whitePotentialJumps = new ArrayList<>();
+        blackPotentialJumps = new ArrayList<>();
+        player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
         if (isPvN)
             player2 = new AIPlayer(this, "Computer", playerColor.not());
         else
-            player2 = new HumanPlayer(this, "Player2", playerColor.not());
+            player2 = new HumanPlayer(this,
+                    "" + playerColor.not() + " Player", playerColor.not());
     }
 
     private void initiate() {
@@ -41,6 +48,7 @@ public class Game {
                 if ((i + j) % 2 == 1)
                     board[i][j] = PieceType.WHITE_MAN;
         turn = player1.color == Color.BLACK ? player1 : player2;
+        updatePotentialMoves();
     }
 
     void start() {
@@ -49,14 +57,71 @@ public class Game {
             printBoard();
             System.out.println(turn.name + "'s turn:");
             Move move = turn.getNextMove();
-            while (!canMove(move)) {
+            while (!isMoveValid(move)) {
                 System.out.println("Move not possible!");
                 move = turn.getNextMove();
             }
             move(move);
-            updateTurn();
             updatePotentialMoves();
+            updateTurn();
         }
+        System.out.println(winner + " WINS!");
+    }
+
+    private boolean isGameFinished() {
+        if (turn.color == Color.BLACK && blackPotentialJumps.isEmpty() &&
+                blackPotentialMoves.isEmpty()) {
+            winner = Color.WHITE;
+            return true;
+        }
+        if (turn.color == Color.WHITE && whitePotentialJumps.isEmpty() &&
+                whitePotentialMoves.isEmpty()) {
+            winner = Color.BLACK;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMoveValid(Move move) {
+        if (turn.color == Color.BLACK) {
+            if (!blackPotentialJumps.isEmpty())
+                return blackPotentialJumps.contains(move);
+            else
+                return blackPotentialMoves.contains(move);
+        } else {
+            if (!whitePotentialJumps.isEmpty())
+                return whitePotentialJumps.contains(move);
+            else
+                return whitePotentialMoves.contains(move);
+        }
+    }
+
+    private boolean canMove(int fromRow, int fromCol, int toRow, int toCol) {
+        if (fromRow < 0 || fromRow > 7 || toRow < 0 || toRow > 7)
+            return false;
+        if (fromCol < 0 || fromCol > 7 || toCol < 0 || toCol > 7)
+            return false;
+        if (turn.color != board[fromRow][fromCol].getColor())
+            return false;
+        if (Math.abs(fromCol - toCol) != Math.abs(fromRow - toRow))
+            return false;
+        if (Math.abs(fromRow - toRow) > 2)
+            return false;
+        if (board[fromRow][fromCol] == PieceType.BLACK_MAN &&
+                toRow < fromRow)
+            return false;
+        if (board[fromRow][fromCol] == PieceType.WHITE_MAN &&
+                toRow > fromRow)
+            return false;
+        if (board[toRow][toCol] != PieceType.BLANK)
+            return false;
+        if (Math.abs(fromRow - toRow) == 2) {
+            int midRow = (toRow - fromRow) / 2 + fromRow;
+            int midCol = (toCol - fromCol) / 2 + fromCol;
+            if (board[midRow][midCol].getColor() != turn.color.not())
+                return false;
+        }
+        return true;
     }
 
     private void move(Move move) {
@@ -74,42 +139,17 @@ public class Game {
             else
                 board[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
         }
-    }
-
-    private boolean isGameFinished() {
-        return false;//TODO
-    }
-
-    private boolean canMove(Move move) {
-        if (move.fromRow < 0 || move.fromRow > 7 || move.toRow < 0 || move.toRow > 7)
-            return false;
-        if (move.fromCol < 0 || move.fromCol > 7 || move.toCol < 0 || move.toCol > 7)
-            return false;
-        if (turn.color != board[move.fromRow][move.fromCol].getColor())
-            return false;
-        if (Math.abs(move.fromCol - move.toCol) != Math.abs(move.fromRow - move.toRow))
-            return false;
-        if (Math.abs(move.fromRow - move.toRow) > 2)
-            return false;
-        if (board[move.fromRow][move.fromCol] == PieceType.BLACK_MAN &&
-                move.toRow < move.fromRow)
-            return false;
-        if (board[move.fromRow][move.fromCol] == PieceType.WHITE_MAN &&
-                move.toRow > move.fromRow)
-            return false;
-        if (board[move.toRow][move.toCol] != PieceType.BLANK)
-            return false;
-        if (Math.abs(move.fromRow - move.toRow) == 2) {
-            int midRow = (move.toRow - move.fromRow) / 2 + move.fromRow;
-            int midCol = (move.toCol - move.fromCol) / 2 + move.fromCol;
-            if (board[midRow][midCol].getColor() != turn.color.not())
-                return false;
-        }
-        return true;
+        if (turn.color == Color.WHITE && move.toRow == 0)
+            board[move.toRow][move.toCol] = PieceType.WHITE_KING;
+        if (turn.color == Color.BLACK && move.toRow == 7)
+            board[move.toRow][move.toCol] = PieceType.BLACK_KING;
     }
 
     private void updateTurn() {
-        //TODO
+        if (turn.color == Color.BLACK && !blackPotentialJumps.isEmpty())
+            return;
+        if (turn.color == Color.WHITE && !whitePotentialJumps.isEmpty())
+            return;
         if (turn == player1)
             turn = player2;
         else
@@ -117,16 +157,50 @@ public class Game {
     }
 
     private void updatePotentialMoves() {
-        //TODO
+        blackPotentialMoves.clear();
+        whitePotentialMoves.clear();
+        blackPotentialJumps.clear();
+        whitePotentialJumps.clear();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                PieceType p = board[i][j];
+                if (p.getColor() == Color.BLACK) {
+                    updatePotentialMoves(Color.BLACK, i, j);
+                } else if (p.getColor() == Color.WHITE) {
+                    updatePotentialMoves(Color.WHITE, i, j);
+                }
+            }
+        }
     }
+
+    private void updatePotentialMoves(Color color, int i, int j) {
+        List<Move> potentialMoves = color == Color.BLACK ?
+                blackPotentialMoves : whitePotentialMoves;
+        List<Move> potentialJumps = color == Color.BLACK ?
+                blackPotentialJumps : whitePotentialJumps;
+        int[] iDest = new int[]{i + 1, i - 1};
+        int[] jDest = new int[]{j + 1, j - 1};
+        for (int k : iDest)
+            for (int w : jDest)
+                if (canMove(i, j, k, w))
+                    potentialMoves.add(new Move(i, j, k, w));
+        iDest = new int[]{i + 2, i - 2};
+        jDest = new int[]{j + 2, j - 2};
+        for (int k : iDest)
+            for (int w : jDest)
+                if (canMove(i, j, k, w)) {
+                    potentialJumps.add(new Move(i, j, k, w));
+                }
+    }
+
 
     private void printBoard() {
         System.out.print("\t ");
         for (int i = 0; i < 8; i++)
-            System.out.print(" " + i + " ");
+            System.out.print(" " + (i + 1) + " ");
         System.out.println("\n");
         for (int i = 0; i < 8; i++) {
-            System.out.print("" + i + "\t ");
+            System.out.print("" + (i + 1) + "\t ");
             for (int j = 0; j < 8; j++) {
                 PieceType p = board[i][j];
                 if ((i + j) % 2 == 0)
@@ -143,8 +217,14 @@ public class Game {
                     System.out.print("\u001B[32m" + " K" + "\u001B[0m" + " ");
                 System.out.print("\u001B[0m");
             }
+            System.out.print("\t" + (i + 1));
             System.out.println();
         }
+        System.out.println();
+        System.out.print("\t ");
+        for (int i = 0; i < 8; i++)
+            System.out.print(" " + (i + 1) + " ");
+        System.out.println();
     }
 
     //    private JSONObject collectBoard() {

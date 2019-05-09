@@ -15,8 +15,8 @@ public class HumanPlayer extends Player {
     @Override
     public Move getNextMove() {
         Scanner scanner = new Scanner(System.in);
-        return new Move(scanner.nextInt(), scanner.nextInt(),
-                scanner.nextInt(), scanner.nextInt());
+        return new Move(scanner.nextInt() - 1, scanner.nextInt() - 1,
+                scanner.nextInt() - 1, scanner.nextInt() - 1);
         //        checkers.Server server = new checkers.Server();
 //        server.start();
 //        while (!isGameFinished()) {
