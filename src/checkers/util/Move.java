@@ -15,6 +15,10 @@ public class Move {
         this.toCol = toCol;
     }
 
+    public Move(int[] move) {
+        this(move[0], move[1], move[2], move[3]);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

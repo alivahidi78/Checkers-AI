@@ -7,7 +7,7 @@ import checkers.util.Move;
 public abstract class Player {
     public final Color color;
     public final String name;
-    private final Game game;
+    final Game game;
 
     Player(Game game, String name, Color color) {
         this.game = game;

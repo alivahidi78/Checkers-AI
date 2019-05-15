@@ -1,17 +1,24 @@
-package checkers;
+package checkers.Stream;
 
+import checkers.util.Move;
+import checkers.util.PieceType;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 
-public class Server extends WebSocketServer {
-    private static int TCP_PORT = 4444;
+public class NetworkStream extends WebSocketServer implements Stream {
+    private static final int TCP_PORT = 4444;
+    private static NetworkStream networkStream = new NetworkStream();
     private WebSocket socket;
 
-    Server() {
+    private NetworkStream() {
         super(new InetSocketAddress(TCP_PORT));
+    }
+
+    public static NetworkStream getStream() {
+        return networkStream;
     }
 
     @Override
@@ -37,5 +44,15 @@ public class Server extends WebSocketServer {
     @Override
     public void onStart() {
 
+    }
+
+    @Override
+    public void printData(PieceType[][] board, Move lastMove) {
+
+    }
+
+    @Override
+    public int[] scanData() {
+        return new int[0];
     }
 }

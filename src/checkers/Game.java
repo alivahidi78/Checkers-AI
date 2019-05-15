@@ -1,5 +1,6 @@
 package checkers;
 
+import checkers.Stream.Stream;
 import checkers.player.AIPlayer;
 import checkers.player.HumanPlayer;
 import checkers.player.Player;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Game {
+    public Stream stream;
     private PieceType[][] board;
     private Player turn;
     private List<Move> whitePotentialMoves;
@@ -23,15 +25,16 @@ public class Game {
     private Player player2;
     private Color winner;
 
-    Game(Color playerColor, boolean isPvN) {
+    Game(Stream stream, Color playerColor, boolean isPvC) {
         board = new PieceType[8][8];
         whitePotentialMoves = new ArrayList<>();
         blackPotentialMoves = new ArrayList<>();
         whitePotentialJumps = new ArrayList<>();
         blackPotentialJumps = new ArrayList<>();
+        this.stream = stream;
         lastMove = new Move(-1, -1, -1, -1);
         player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
-        if (isPvN)
+        if (isPvC)
             player2 = new AIPlayer(this, "Computer", playerColor.not());
         else
             player2 = new HumanPlayer(this,
@@ -56,7 +59,7 @@ public class Game {
     void start() {
         initiate();
         while (!isGameFinished()) {
-            printBoard();
+            stream.printData(board, lastMove);
             System.out.println(turn.name + "'s turn:");
             Move move = turn.getNextMove();
             while (!isMoveValid(move)) {
@@ -67,7 +70,7 @@ public class Game {
             updatePotentialMoves();
             updateTurn();
         }
-        printBoard();
+        stream.printData(board, lastMove);
         System.out.println(winner + " WINS!");
     }
 
@@ -198,42 +201,6 @@ public class Game {
                 if (canMove(color, i, j, k, w)) {
                     potentialJumps.add(new Move(i, j, k, w));
                 }
-    }
-
-    private void printBoard() {
-        System.out.print("\t ");
-        for (int i = 0; i < 8; i++)
-            System.out.print(" " + (i + 1) + " ");
-        System.out.println("\n");
-        for (int i = 0; i < 8; i++) {
-            System.out.print("" + (i + 1) + "\t ");
-            for (int j = 0; j < 8; j++) {
-                PieceType p = board[i][j];
-                if ((i + j) % 2 == 0)
-                    System.out.print("\u001B[47m");
-                else if ((i == lastMove.fromRow && j == lastMove.fromCol) ||
-                        i == lastMove.toRow && j == lastMove.toCol)
-                    System.out.print("\033[43m");
-                if (p == PieceType.BLANK)
-                    System.out.print("   ");
-                else if (p == PieceType.BLACK_MAN)
-                    System.out.print("\033[1;34m" + " M ");
-                else if (p == PieceType.WHITE_MAN)
-                    System.out.print("\033[1;31m" + " M ");
-                else if (p == PieceType.BLACK_KING)
-                    System.out.print("\033[1;34m" + " K ");
-                else if (p == PieceType.WHITE_KING)
-                    System.out.print("\033[1;31m" + " K ");
-                System.out.print("\u001B[0m");
-            }
-            System.out.print("\t" + (i + 1));
-            System.out.println();
-        }
-        System.out.println();
-        System.out.print("\t ");
-        for (int i = 0; i < 8; i++)
-            System.out.print(" " + (i + 1) + " ");
-        System.out.println();
     }
 
     //    private JSONObject collectBoard() {
