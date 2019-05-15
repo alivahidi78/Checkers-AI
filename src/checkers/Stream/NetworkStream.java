@@ -89,7 +89,7 @@ public class NetworkStream extends WebSocketServer implements Stream {
         }
         object.put("board", boardArray);
         object.put("type", "board");
-        System.out.println(object.toJSONString());
+        System.err.println(db.getTurn().color);
         socket.send(object.toJSONString());
     }
 
@@ -105,7 +105,6 @@ public class NetworkStream extends WebSocketServer implements Stream {
                 e.printStackTrace();
             }
         Scanner scanner = new Scanner(message);
-        System.err.println(message);
         move = new Move(scanner.nextInt(), scanner.nextInt(), scanner.nextInt(), scanner.nextInt());
         messageReceived = false;
         return move;

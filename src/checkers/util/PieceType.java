@@ -24,7 +24,7 @@ public enum PieceType {
             if (this == BLACK_KING || this == WHITE_KING)
                 type = "king";
             if (this.getColor() == Color.WHITE)
-                color = "white";
+                color = "#f8f8ff";
             piece.put("color", color);
             piece.put("type", type);
         }

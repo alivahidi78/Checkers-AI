@@ -98,6 +98,8 @@ public class Game {
             return false;
         if (fromCol < 0 || fromCol > 7 || toCol < 0 || toCol > 7)
             return false;
+        if (board[toRow][toCol] != PieceType.BLANK)
+            return false;
         if (board[fromRow][fromCol] == PieceType.BLACK_MAN &&
                 toRow < fromRow)
             return false;
