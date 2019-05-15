@@ -5,6 +5,8 @@ import checkers.util.PieceType;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.net.InetSocketAddress;
 
@@ -48,7 +50,19 @@ public class NetworkStream extends WebSocketServer implements Stream {
 
     @Override
     public void printData(PieceType[][] board, Move lastMove) {
-
+        JSONObject object = new JSONObject();
+        JSONArray boardArray = new JSONArray();
+        for (PieceType[] pieceTypes : board) {
+            JSONArray row = new JSONArray();
+            for (PieceType p : pieceTypes) {
+                row.add(p.toJSON());
+            }
+            boardArray.add(row);
+        }
+        object.put("board", boardArray);
+        object.put("type", "board");
+        System.out.println(object.toJSONString());
+        socket.send(object.toJSONString());
     }
 
     @Override

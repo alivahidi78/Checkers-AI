@@ -1,5 +1,7 @@
 package checkers.util;
 
+import org.json.simple.JSONObject;
+
 public enum PieceType {
     BLANK, WHITE_MAN, BLACK_MAN, WHITE_KING, BLACK_KING;
 
@@ -11,36 +13,24 @@ public enum PieceType {
         return null;
     }
 
-//    public JSONObject toJSON() {
-//        String type = "null";
-//        String color = "null";
-//        try {
-//            switch (this) {
-//                case WHITE_MAN:
-//                case WHITE_KING:
-//                    color = "white";
-//                    break;
-//                case BLACK_MAN:
-//                case BLACK_KING:
-//                    color = "black";
-//            }
-//            switch (this) {
-//                case BLACK_KING:
-//                case WHITE_KING:
-//                    type = "king";
-//                    break;
-//                case BLACK_MAN:
-//                case WHITE_MAN:
-//                    type = "man";
-//            }
-//        } catch (Exception e) {
-//            type = "null";
-//            color = "null";
-//        }
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("type", type);
-//        jsonObject.put("color", color);
-//        return jsonObject;
-//    }
+    public JSONObject toJSON() {
+        JSONObject piece;
+        if (this == BLANK)
+            piece = null;
+        else {
+            String type = "man";
+            String color = "black";
+            piece = new JSONObject();
+            if (this == BLACK_KING || this == WHITE_KING)
+                type = "king";
+            if (this.getColor() == Color.WHITE)
+                color = "white";
+            piece.put("color", color);
+            piece.put("type", type);
+        }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("piece", piece);
+        return jsonObject;
+    }
 }
 
