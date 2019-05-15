@@ -130,16 +130,19 @@ public class Game {
             else
                 board[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
         }
-        if (p.getColor() == Color.WHITE && move.toRow == 0)
-            board[move.toRow][move.toCol] = PieceType.WHITE_KING;
-        if (p.getColor() == Color.BLACK && move.toRow == 7)
-            board[move.toRow][move.toCol] = PieceType.BLACK_KING;
         db.setLastMove(move);
     }
 
     private void updateTurn() {
         Move lm = db.getLastMove();
-        if (Math.abs(lm.toCol - lm.fromCol) == 2) {
+        PieceType moved = board[lm.toRow][lm.toCol];
+
+        if (lm.toRow == 0 && moved == PieceType.WHITE_MAN)
+            board[lm.toRow][lm.toCol] = PieceType.WHITE_KING;
+        else if (lm.toRow == 7 && moved == PieceType.BLACK_MAN)
+            board[lm.toRow][lm.toCol] = PieceType.BLACK_KING;
+
+        else if (Math.abs(lm.toCol - lm.fromCol) == 2) {
             potentialJumps.clear();
             potentialMoves.clear();
             updatePotentialJumps(lm.toRow, lm.toCol);

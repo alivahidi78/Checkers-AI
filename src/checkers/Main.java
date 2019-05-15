@@ -29,7 +29,9 @@ public class Main {
             stream = DefaultStream.getInstance();
         } else {
             stream = NetworkStream.getInstance();
-            new Thread(() -> NetworkStream.getInstance().start()).start();
+            Thread thread = new Thread(() -> NetworkStream.getInstance().start());
+            thread.setDaemon(true);
+            thread.start();
         }
         game = new Game(stream, color, isPvC);
         game.start();
