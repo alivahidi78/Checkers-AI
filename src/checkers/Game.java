@@ -5,6 +5,7 @@ import checkers.player.AIPlayer;
 import checkers.player.HumanPlayer;
 import checkers.player.Player;
 import checkers.util.Color;
+import checkers.util.Database;
 import checkers.util.Move;
 import checkers.util.PieceType;
 
@@ -13,26 +14,23 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Game {
-    public Stream stream;
+    private Stream stream;
+    private Database db;
     private PieceType[][] board;
-    private Player turn;
-    private List<Move> whitePotentialMoves;
-    private List<Move> blackPotentialMoves;
-    private List<Move> whitePotentialJumps;
-    private List<Move> blackPotentialJumps;
-    private Move lastMove;
+    private List<Move> potentialMoves;
+    private List<Move> potentialJumps;
     private Player player1;
     private Player player2;
     private Color winner;
 
     Game(Stream stream, Color playerColor, boolean isPvC) {
         board = new PieceType[8][8];
-        whitePotentialMoves = new ArrayList<>();
-        blackPotentialMoves = new ArrayList<>();
-        whitePotentialJumps = new ArrayList<>();
-        blackPotentialJumps = new ArrayList<>();
+        db = Database.getInstance();
+        db.setBoard(board);
+        potentialMoves = new ArrayList<>();
+        potentialJumps = new ArrayList<>();
         this.stream = stream;
-        lastMove = new Move(-1, -1, -1, -1);
+        db.setLastMove(new Move(-1, -1, -1, -1));
         player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
         if (isPvC)
             player2 = new AIPlayer(this, "Computer", playerColor.not());
@@ -41,7 +39,12 @@ public class Game {
                     "" + playerColor.not() + " Player", playerColor.not());
     }
 
-    private void initiate() {
+    public Stream getStream() {
+        return stream;
+    }
+
+    void start() {
+        //Sets Board.
         for (PieceType[] pieceRow : board)
             Arrays.fill(pieceRow, PieceType.BLANK);
         for (int i = 0; i < 3; i++)
@@ -52,75 +55,54 @@ public class Game {
             for (int j = 0; j < 8; j++)
                 if ((i + j) % 2 == 1)
                     board[i][j] = PieceType.WHITE_MAN;
-        turn = player1.color == Color.BLACK ? player1 : player2;
-        updatePotentialMoves();
-    }
+        db.setTurn(player1.color == Color.BLACK ? player1 : player2);
+        updateChoices(Color.BLACK);
 
-    void start() {
-        initiate();
+        //Starts the game
         while (!isGameFinished()) {
-            stream.printData(board, lastMove);
-            System.out.println(turn.name + "'s turn:");
-            Move move = turn.getNextMove();
+            stream.printData();
+            Move move = db.getTurn().getNextMove();
             while (!isMoveValid(move)) {
                 System.out.println("Move not possible!");
-                move = turn.getNextMove();
+                move = db.getTurn().getNextMove();
             }
             move(move);
-            updatePotentialMoves();
             updateTurn();
         }
-        stream.printData(board, lastMove);
+        stream.printData();
         System.out.println(winner + " WINS!");
     }
 
     private boolean isGameFinished() {
-        if (turn.color == Color.BLACK && blackPotentialJumps.isEmpty() &&
-                blackPotentialMoves.isEmpty()) {
-            winner = Color.WHITE;
-
-            return true;
-        }
-        if (turn.color == Color.WHITE && whitePotentialJumps.isEmpty() &&
-                whitePotentialMoves.isEmpty()) {
-            winner = Color.BLACK;
+        if (potentialJumps.isEmpty() &&
+                potentialMoves.isEmpty()) {
+            if (db.getTurn().color == Color.BLACK)
+                winner = Color.WHITE;
+            else
+                winner = Color.BLACK;
             return true;
         }
         return false;
     }
 
     private boolean isMoveValid(Move move) {
-        if (turn.color == Color.BLACK) {
-            if (!blackPotentialJumps.isEmpty())
-                return blackPotentialJumps.contains(move);
-            else
-                return blackPotentialMoves.contains(move);
-        } else {
-            if (!whitePotentialJumps.isEmpty())
-                return whitePotentialJumps.contains(move);
-            else
-                return whitePotentialMoves.contains(move);
-        }
+        if (!potentialJumps.isEmpty())
+            return potentialJumps.contains(move);
+        else
+            return potentialMoves.contains(move);
     }
 
-    private boolean canMove(Color color, int fromRow, int fromCol, int toRow, int toCol) {
+    private boolean canMove(int fromRow, int fromCol, int toRow, int toCol) {
+        Color color = board[fromRow][fromCol].getColor();
         if (fromRow < 0 || fromRow > 7 || toRow < 0 || toRow > 7)
             return false;
         if (fromCol < 0 || fromCol > 7 || toCol < 0 || toCol > 7)
-            return false;
-        if (color != board[fromRow][fromCol].getColor())
-            return false;
-        if (Math.abs(fromCol - toCol) != Math.abs(fromRow - toRow))
-            return false;
-        if (Math.abs(fromRow - toRow) > 2)
             return false;
         if (board[fromRow][fromCol] == PieceType.BLACK_MAN &&
                 toRow < fromRow)
             return false;
         if (board[fromRow][fromCol] == PieceType.WHITE_MAN &&
                 toRow > fromRow)
-            return false;
-        if (board[toRow][toCol] != PieceType.BLANK)
             return false;
         if (Math.abs(fromRow - toRow) == 2) {
             int midRow = (toRow - fromRow) / 2 + fromRow;
@@ -146,77 +128,59 @@ public class Game {
             else
                 board[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
         }
-        if (turn.color == Color.WHITE && move.toRow == 0)
+        if (p.getColor() == Color.WHITE && move.toRow == 0)
             board[move.toRow][move.toCol] = PieceType.WHITE_KING;
-        if (turn.color == Color.BLACK && move.toRow == 7)
+        if (p.getColor() == Color.BLACK && move.toRow == 7)
             board[move.toRow][move.toCol] = PieceType.BLACK_KING;
-        lastMove = move;
+        db.setLastMove(move);
     }
 
     private void updateTurn() {
-        if (Math.abs(lastMove.toCol - lastMove.fromCol) == 2 &&
-                turn.color == Color.BLACK && !blackPotentialJumps.isEmpty())
-            return;
-        if (Math.abs(lastMove.toCol - lastMove.fromCol) == 2 &&
-                turn.color == Color.WHITE && !whitePotentialJumps.isEmpty())
-            return;
-        if (turn == player1)
-            turn = player2;
+        Move lm = db.getLastMove();
+        if (Math.abs(lm.toCol - lm.fromCol) == 2) {
+            potentialJumps.clear();
+            potentialMoves.clear();
+            updatePotentialJumps(lm.toRow, lm.toCol);
+            if (!potentialJumps.isEmpty())
+                return;
+        }
+        if (db.getTurn() == player1)
+            db.setTurn(player2);
         else
-            turn = player1;
+            db.setTurn(player1);
+        updateChoices(db.getTurn().color);
     }
 
-    private void updatePotentialMoves() {
-        blackPotentialMoves.clear();
-        whitePotentialMoves.clear();
-        blackPotentialJumps.clear();
-        whitePotentialJumps.clear();
+    private void updateChoices(Color c) {
+        potentialMoves.clear();
+        potentialJumps.clear();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 PieceType p = board[i][j];
-                if (p.getColor() == Color.BLACK) {
-                    updatePotentialMoves(Color.BLACK, i, j);
-                } else if (p.getColor() == Color.WHITE) {
-                    updatePotentialMoves(Color.WHITE, i, j);
+                if (p.getColor() == c) {
+                    updatePotentialMoves(i, j);
+                    updatePotentialJumps(i, j);
                 }
             }
         }
     }
 
-    private void updatePotentialMoves(Color color, int i, int j) {
-        List<Move> potentialMoves = color == Color.BLACK ?
-                blackPotentialMoves : whitePotentialMoves;
-        List<Move> potentialJumps = color == Color.BLACK ?
-                blackPotentialJumps : whitePotentialJumps;
+    private void updatePotentialMoves(int i, int j) {
         int[] iDest = new int[]{i + 1, i - 1};
         int[] jDest = new int[]{j + 1, j - 1};
         for (int k : iDest)
             for (int w : jDest)
-                if (canMove(color, i, j, k, w))
+                if (canMove(i, j, k, w))
                     potentialMoves.add(new Move(i, j, k, w));
-        iDest = new int[]{i + 2, i - 2};
-        jDest = new int[]{j + 2, j - 2};
+    }
+
+    private void updatePotentialJumps(int i, int j) {
+        int[] iDest = new int[]{i + 2, i - 2};
+        int[] jDest = new int[]{j + 2, j - 2};
         for (int k : iDest)
             for (int w : jDest)
-                if (canMove(color, i, j, k, w)) {
+                if (canMove(i, j, k, w)) {
                     potentialJumps.add(new Move(i, j, k, w));
                 }
     }
-
-    //    private JSONObject collectBoard() {
-//        JSONObject jsonObject = new JSONObject();
-//        JSONArray board = new JSONArray();
-//        for (int i = 0; i < 8; i++) {
-//            JSONArray row = new JSONArray();
-//            for (int j = 0; j < 8; j++) {
-//                row.add(board[i][j].toJSON());
-//            }
-//            board.add(row);
-//        }
-//        jsonObject.put("board", board);
-//        jsonObject.put("label", "user");
-//        jsonObject.put("turn", "user");
-//        return jsonObject;
-//    }
-
 }

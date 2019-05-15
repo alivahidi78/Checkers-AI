@@ -3,10 +3,10 @@ package checkers.util;
 import java.util.Objects;
 
 public class Move {
-    public int fromRow;
-    public int fromCol;
-    public int toRow;
-    public int toCol;
+    public final int fromRow;
+    public final int fromCol;
+    public final int toRow;
+    public final int toCol;
 
     public Move(int fromRow, int fromCol, int toRow, int toCol) {
         this.fromRow = fromRow;

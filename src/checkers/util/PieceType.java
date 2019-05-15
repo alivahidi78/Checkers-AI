@@ -19,7 +19,7 @@ public enum PieceType {
             piece = null;
         else {
             String type = "man";
-            String color = "black";
+            String color = "#00677f";
             piece = new JSONObject();
             if (this == BLACK_KING || this == WHITE_KING)
                 type = "king";

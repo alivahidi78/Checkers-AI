@@ -1,5 +1,6 @@
 package checkers.Stream;
 
+import checkers.util.Database;
 import checkers.util.Move;
 import checkers.util.PieceType;
 
@@ -8,17 +9,19 @@ import java.util.Scanner;
 public class DefaultStream implements Stream {
     private static DefaultStream stream = new DefaultStream();
     private Scanner scanner = new Scanner(System.in);
+    private Database db;
 
     private DefaultStream() {
+        db = Database.getInstance();
     }
 
-    public static DefaultStream getStream() {
+    public static DefaultStream getInstance() {
         return stream;
     }
 
 
     @Override
-    public void printData(PieceType[][] board, Move lastMove) {
+    public void printData() {
         System.out.print("\t ");
         for (int i = 0; i < 8; i++)
             System.out.print(" " + (i + 1) + " ");
@@ -26,11 +29,11 @@ public class DefaultStream implements Stream {
         for (int i = 0; i < 8; i++) {
             System.out.print("" + (i + 1) + "\t ");
             for (int j = 0; j < 8; j++) {
-                PieceType p = board[i][j];
+                PieceType p = db.getBoard()[i][j];
                 if ((i + j) % 2 == 0)
                     System.out.print("\u001B[47m");
-                else if ((i == lastMove.fromRow && j == lastMove.fromCol) ||
-                        i == lastMove.toRow && j == lastMove.toCol)
+                else if ((i == db.getLastMove().fromRow && j == db.getLastMove().fromCol) ||
+                        i == db.getLastMove().toRow && j == db.getLastMove().toCol)
                     System.out.print("\033[43m");
                 if (p == PieceType.BLANK)
                     System.out.print("   ");
@@ -52,15 +55,14 @@ public class DefaultStream implements Stream {
         for (int i = 0; i < 8; i++)
             System.out.print(" " + (i + 1) + " ");
         System.out.println();
+        System.out.println(db.getTurn().name + "'s turn:");
     }
 
     @Override
-    public int[] scanData() {
-        int[] data = new int[4];
-        data[0] = scanner.nextInt() - 1;
-        data[1] = scanner.nextInt() - 1;
-        data[2] = scanner.nextInt() - 1;
-        data[3] = scanner.nextInt() - 1;
-        return data;
+    public Move scanData() {
+        return new Move(scanner.nextInt() - 1,
+                scanner.nextInt() - 1,
+                scanner.nextInt() - 1,
+                scanner.nextInt() - 1);
     }
 }

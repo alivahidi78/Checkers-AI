@@ -12,7 +12,6 @@ public class HumanPlayer extends Player {
 
     @Override
     public Move getNextMove() {
-        int[] m = game.stream.scanData();
-        return new Move(m);
+        return game.getStream().scanData();
     }
 }
