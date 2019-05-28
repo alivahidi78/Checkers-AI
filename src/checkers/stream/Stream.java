@@ -1,4 +1,4 @@
-package checkers.Stream;
+package checkers.stream;
 
 import checkers.util.Move;
 

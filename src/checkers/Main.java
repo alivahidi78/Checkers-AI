@@ -1,8 +1,8 @@
 package checkers;
 
-import checkers.Stream.DefaultStream;
-import checkers.Stream.NetworkStream;
-import checkers.Stream.Stream;
+import checkers.stream.DefaultStream;
+import checkers.stream.NetworkStream;
+import checkers.stream.Stream;
 import checkers.util.Color;
 
 import java.util.Scanner;
