@@ -19,6 +19,10 @@ public class Move {
         this(move[0], move[1], move[2], move[3]);
     }
 
+    public boolean isJump() {
+        return Math.abs(toCol - fromCol) == 2;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

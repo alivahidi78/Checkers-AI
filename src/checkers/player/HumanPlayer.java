@@ -1,6 +1,6 @@
 package checkers.player;
 
-import checkers.Game;
+import checkers.util.Game;
 import checkers.util.Color;
 import checkers.util.Move;
 

@@ -1,22 +1,31 @@
-package checkers;
+package checkers.util;
 
 import checkers.player.AIPlayer;
 import checkers.player.HumanPlayer;
 import checkers.player.Player;
 import checkers.stream.Stream;
-import checkers.util.Color;
-import checkers.util.Database;
-import checkers.util.Move;
 
 public class Game {
+    private static Game instance = new Game();
     private Stream stream;
     private Database db;
     private Player player1;
     private Player player2;
     private Color winner;
 
-    Game(Stream stream, Color playerColor, boolean isPvC) {
+    private Game() {
         db = Database.getInstance();
+    }
+
+    public static Game getInstance() {
+        return instance;
+    }
+
+    public Stream getStream() {
+        return stream;
+    }
+
+    public void start(Stream stream, Color playerColor, boolean isPvC) {
         this.stream = stream;
         player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
         if (isPvC)
@@ -24,23 +33,15 @@ public class Game {
         else
             player2 = new HumanPlayer(this,
                     "" + playerColor.not() + " Player", playerColor.not());
-    }
-
-    public Stream getStream() {
-        return stream;
-    }
-
-    void start() {
         db.initialize(player1, player2);
         while (!isGameFinished()) {
             stream.printData();
             Move move = db.getTurn().getNextMove();
-            while (!db.isMoveValid(move)) {
+            while (!isMoveValid(move)) {
                 System.out.println("Move not possible!");
                 move = db.getTurn().getNextMove();
             }
-            db.move(move);
-            db.updateTurn(player1, player2);
+            db.move(move, player1, player2);
         }
         stream.printData();
         System.out.println(winner + " WINS!");
@@ -56,5 +57,12 @@ public class Game {
             return true;
         }
         return false;
+    }
+
+    private boolean isMoveValid(Move move) {
+        if (!db.getPotentialJumps().isEmpty())
+            return db.getPotentialJumps().contains(move);
+        else
+            return db.getPotentialMoves().contains(move);
     }
 }

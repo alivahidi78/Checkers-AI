@@ -1,8 +1,11 @@
 package checkers.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Util {
+
     public static void updateChoices(PieceType[][] board, List<Move> potentialMoves, List<Move> potentialJumps, Color c) {
         potentialMoves.clear();
         potentialJumps.clear();
@@ -56,6 +59,47 @@ public class Util {
             int midRow = (toRow - fromRow) / 2 + fromRow;
             int midCol = (toCol - fromCol) / 2 + fromCol;
             if (board[midRow][midCol].getColor() != color.not())
+                return false;
+        }
+        return true;
+    }
+
+    public static PieceType[][] cloneBoard(PieceType[][] board) {
+        PieceType[][] newBoard = new PieceType[board.length][];
+        for (int i = 0; i < board.length; i++)
+            newBoard[i] = Arrays.copyOf(board[i], board[i].length);
+        return newBoard;
+    }
+
+    /**
+     * @return turn changes or not
+     */
+    public static boolean move(PieceType[][] board, Move move) {
+        PieceType p = board[move.fromRow][move.fromCol];
+        board[move.toRow][move.toCol] = p;
+        board[move.fromRow][move.fromCol] = PieceType.BLANK;
+        if (move.toRow - move.fromRow == 2) {
+            if (move.toCol - move.fromCol == 2)
+                board[move.fromRow + 1][move.fromCol + 1] = PieceType.BLANK;
+            else
+                board[move.fromRow + 1][move.fromCol - 1] = PieceType.BLANK;
+        } else if (move.toRow - move.fromRow == -2) {
+            if (move.toCol - move.fromCol == 2)
+                board[move.fromRow - 1][move.fromCol + 1] = PieceType.BLANK;
+            else
+                board[move.fromRow - 1][move.fromCol - 1] = PieceType.BLANK;
+        }
+
+        PieceType moved = board[move.toRow][move.toCol];
+        if (move.toRow == 0 && moved == PieceType.WHITE_MAN)
+            board[move.toRow][move.toCol] = PieceType.WHITE_KING;
+        else if (move.toRow == 7 && moved == PieceType.BLACK_MAN)
+            board[move.toRow][move.toCol] = PieceType.BLACK_KING;
+
+        else if (move.isJump()) {
+            List<Move> pj = new ArrayList<>();
+            updatePotentialJumps(board, pj, move.toRow, move.toCol);
+            if (!pj.isEmpty())
                 return false;
         }
         return true;

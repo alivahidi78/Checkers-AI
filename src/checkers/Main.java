@@ -4,13 +4,14 @@ import checkers.stream.DefaultStream;
 import checkers.stream.NetworkStream;
 import checkers.stream.Stream;
 import checkers.util.Color;
+import checkers.util.Game;
 
 import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) {
-        Game game;
+        Game game = Game.getInstance();
         Scanner scanner = new Scanner(System.in);
         Stream stream;
         Color color;
@@ -33,7 +34,6 @@ public class Main {
             thread.setDaemon(true);
             thread.start();
         }
-        game = new Game(stream, color, isPvC);
-        game.start();
+        game.start(stream, color, isPvC);
     }
 }
