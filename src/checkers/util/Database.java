@@ -14,6 +14,7 @@ public class Database {
     private List<Move> potentialJumps = new ArrayList<>();
     private Move lastMove;
     private Player turn;
+    private boolean turnChanged = true;
 
     private Database() {
     }
@@ -22,8 +23,8 @@ public class Database {
         return db;
     }
 
-    private void updateChoices(Color c) {
-        Util.updateChoices(board, potentialMoves, potentialJumps, c);
+    public boolean isTurnChanged() {
+        return turnChanged;
     }
 
     void initialize(Player player1, Player player2) {
@@ -38,24 +39,20 @@ public class Database {
             for (int j = 0; j < 8; j++)
                 if ((i + j) % 2 == 1)
                     board[i][j] = PieceType.WHITE_MAN;
-        updateChoices(Color.BLACK);
-        lastMove = new Move(-1, -1, -1, -1);
+        lastMove = new Move(-1,-1,-1,-1);
+        Util.updateChoices(board, potentialMoves, potentialJumps, Color.BLACK,
+                turnChanged,lastMove);
     }
 
     void move(Move move, Player player1, Player player2) {
-        boolean turnChanged = Util.move(board, move);
-        if (!turnChanged) {
-            potentialMoves.clear();
-            potentialJumps.clear();
-            Util.updatePotentialJumps(board, potentialJumps, lastMove.toRow, lastMove.toCol);
-        } else {
+        turnChanged = Util.move(board, move);
+        if (turnChanged)
             if (turn == player1)
                 turn = player2;
             else
                 turn = player1;
-            updateChoices(turn.color);
-        }
         lastMove = move;
+        Util.updateChoices(board, potentialMoves, potentialJumps, turn.color, turnChanged, lastMove);
     }
 
     public List<Move> getPotentialMoves() {

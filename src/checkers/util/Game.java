@@ -48,8 +48,7 @@ public class Game {
     }
 
     private boolean isGameFinished() {
-        if (db.getPotentialJumps().isEmpty() &&
-                db.getPotentialMoves().isEmpty()) {
+        if (Util.isGameFinished(db.getBoard(), db.getPotentialMoves(), db.getPotentialJumps())){
             if (db.getTurn().color == Color.BLACK)
                 winner = Color.WHITE;
             else

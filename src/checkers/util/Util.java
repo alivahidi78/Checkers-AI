@@ -6,20 +6,29 @@ import java.util.List;
 
 public class Util {
 
-    public static void updateChoices(PieceType[][] board, List<Move> potentialMoves, List<Move> potentialJumps, Color c) {
+    public static void updateChoices(PieceType[][] board, List<Move> potentialMoves,
+                                     List<Move> potentialJumps, Color currTurn,
+                                     boolean turnChanged, Move lastMove) {
         potentialMoves.clear();
         potentialJumps.clear();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                PieceType p = board[i][j];
-                if (p.getColor() == c) {
-                    updatePotentialMoves(board, potentialMoves, i, j);
-                    updatePotentialJumps(board, potentialJumps, i, j);
+        if (!turnChanged) {
+            Util.updatePotentialJumps(board, potentialJumps, lastMove.toRow, lastMove.toCol);
+        } else {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    PieceType p = board[i][j];
+                    if (p.getColor() == currTurn) {
+                        updatePotentialMoves(board, potentialMoves, i, j);
+                        updatePotentialJumps(board, potentialJumps, i, j);
+                    }
                 }
             }
         }
-//        if(!potentialJumps.isEmpty())
-//            potentialMoves.clear();//FIXME
+    }
+
+    public static boolean isGameFinished(PieceType[][] board, List<Move> potentialMoves, List<Move> potentialJumps) {
+        return potentialJumps.isEmpty() &&
+                potentialMoves.isEmpty();
     }
 
     public static void updatePotentialMoves(PieceType[][] board, List<Move> potentialMoves, int i, int j) {
@@ -58,7 +67,8 @@ public class Util {
         if (Math.abs(fromRow - toRow) == 2) {
             int midRow = (toRow - fromRow) / 2 + fromRow;
             int midCol = (toCol - fromCol) / 2 + fromCol;
-            if (board[midRow][midCol].getColor() != color.not())
+            PieceType middle = board[midRow][midCol];
+            if (middle == PieceType.BLANK || middle.getColor() == color)
                 return false;
         }
         return true;

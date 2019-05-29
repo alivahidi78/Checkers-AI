@@ -1,9 +1,6 @@
 package checkers.player;
 
-import checkers.util.Game;
-import checkers.util.Color;
-import checkers.util.Database;
-import checkers.util.Move;
+import checkers.util.*;
 
 public class AIPlayer extends Player {
     private Database db;
@@ -15,6 +12,8 @@ public class AIPlayer extends Player {
 
     @Override
     public Move getNextMove() {
-        return null;
+        MinimaxTree tree = new MinimaxTree(db.getBoard(), this.color,
+                db.getLastMove(), db.isTurnChanged());
+        return tree.dls_getMove();
     }
 }
