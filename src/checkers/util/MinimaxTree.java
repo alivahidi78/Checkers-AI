@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Set;
 
 public class MinimaxTree {
-    private final int DEPTH_LIMIT = 5;
+    private final int DEPTH_LIMIT = 6;
     private Set<Node> rootChildren = new LinkedHashSet<>();
     private Node root;
     private Color me;
 
     public MinimaxTree(PieceType[][] board, Color me, Move preMove, boolean turnChanged) {
-        root = new Node(true, null, board, preMove, turnChanged);
         this.me = me;
+        root = new Node(true, null, board, preMove, turnChanged);
     }
 
     private void calculateValue(Node node) {
@@ -123,10 +123,8 @@ public class MinimaxTree {
             this.parent = parent;
             this.board = board;
             Util.updateChoices(board, pm, pj,
-                    isMax ? Color.BLACK : Color.WHITE
-//                            me : me.not()//FIXME
-                    , turnChanged, preMove
-            );
+                    isMax ? me : me.not()
+                    , turnChanged, preMove);
         }
 
         List<Node> getChildren() {

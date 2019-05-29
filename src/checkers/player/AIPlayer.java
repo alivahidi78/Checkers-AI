@@ -14,6 +14,11 @@ public class AIPlayer extends Player {
     public Move getNextMove() {
         MinimaxTree tree = new MinimaxTree(db.getBoard(), this.color,
                 db.getLastMove(), db.isTurnChanged());
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return tree.dls_getMove();
     }
 }
