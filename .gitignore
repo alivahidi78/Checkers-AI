@@ -5,6 +5,8 @@
 # dependencies
 /UI/node_modules
 /UI/.pnp
+/UI/package-lock.json
+/UI/yarn.lock
 .pnp.js
 
 # testing
