@@ -11,19 +11,19 @@ public class MinimaxTree {
     private Node root;
     private Color me;
 
-    public MinimaxTree(PieceType[][] board, Color me, Move preMove, boolean turnChanged) {
+    public MinimaxTree(Board board, Color me, Move preMove, boolean turnChanged) {
         this.me = me;
         root = new Node(true, null, board, preMove, turnChanged);
     }
 
     private void calculateValue(Node node) {
-        PieceType[][] board = node.board;
+        Board board = node.board;
         int h1 = 0;
         int h2 = 0;
         int h3 = 0;
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                PieceType p = board[i][j];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                PieceType p = board.get(i, j);
                 if (me == Color.WHITE) {
                     switch (p) {
                         case WHITE_MAN:
@@ -80,7 +80,7 @@ public class MinimaxTree {
     }
 
     private void dls(Node node, int depth) {
-        if (Util.isGameFinished(node.board, node.pm, node.pj)) {
+        if (Game.isGameFinished(node.pm, node.pj)) {
             if (node.isMax)
                 node.value = Integer.MIN_VALUE;
             else
@@ -103,7 +103,7 @@ public class MinimaxTree {
     private class Node {
         final boolean isMax;
         Node parent;
-        PieceType[][] board;
+        Board board;
         List<Move> pm = new ArrayList<>();
         List<Move> pj = new ArrayList<>();
         Move preMove;
@@ -111,7 +111,7 @@ public class MinimaxTree {
         int value;
         int u;
 
-        Node(boolean isMax, Node parent, PieceType[][] board
+        Node(boolean isMax, Node parent, Board board
                 , Move preMove, boolean turnChanged) {
             this.preMove = preMove;
             this.isMax = isMax;
@@ -122,7 +122,7 @@ public class MinimaxTree {
                 value = Integer.MAX_VALUE;
             this.parent = parent;
             this.board = board;
-            Util.updateChoices(board, pm, pj,
+            board.updateChoices(pm, pj,
                     isMax ? me : me.not()
                     , turnChanged, preMove);
         }
@@ -136,12 +136,11 @@ public class MinimaxTree {
                 p = pm;
             for (Move move : p) {
                 Node child;
-                PieceType[][] newBoard = Util.cloneBoard(board);
-                boolean turnChanged = Util.move(newBoard, move);
+                Board newBoard = board.clone();
+                boolean turnChanged = newBoard.move(move);
                 child = new Node(turnChanged ? !isMax : isMax, this,
                         newBoard, move, turnChanged);
                 children.add(child);
-
 
                 if (this == root) {
                     rootChildren.add(child);

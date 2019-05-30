@@ -13,7 +13,7 @@ public class AIPlayer extends Player {
     @Override
     public Move getNextMove() {
         MinimaxTree tree = new MinimaxTree(db.getBoard(), this.color,
-                db.getLastMove(), db.isTurnChanged());
+                db.getLastMove(), db.hasTurnChanged());
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {

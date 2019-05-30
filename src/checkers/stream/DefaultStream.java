@@ -1,5 +1,6 @@
 package checkers.stream;
 
+import checkers.util.Board;
 import checkers.util.Database;
 import checkers.util.Move;
 import checkers.util.PieceType;
@@ -22,6 +23,7 @@ public class DefaultStream implements Stream {
 
     @Override
     public void printData() {
+        Board board = db.getBoard();
         System.out.print("\t ");
         for (int i = 0; i < 8; i++)
             System.out.print(" " + (i + 1) + " ");
@@ -29,7 +31,7 @@ public class DefaultStream implements Stream {
         for (int i = 0; i < 8; i++) {
             System.out.print("" + (i + 1) + "\t ");
             for (int j = 0; j < 8; j++) {
-                PieceType p = db.getBoard()[i][j];
+                PieceType p = board.get(i, j);
                 if ((i + j) % 2 == 0)
                     System.out.print("\u001B[47m");
                 else if ((i == db.getLastMove().fromRow && j == db.getLastMove().fromCol) ||

@@ -1,8 +1,8 @@
 package checkers.stream;
 
+import checkers.util.Board;
 import checkers.util.Database;
 import checkers.util.Move;
-import checkers.util.PieceType;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -69,6 +69,7 @@ public class NetworkStream extends WebSocketServer implements Stream {
 
     @Override
     public void printData() {
+        Board board = db.getBoard();
         JSONObject object = new JSONObject();
         JSONArray boardArray = new JSONArray();
         if (!isConnected) {
@@ -80,10 +81,10 @@ public class NetworkStream extends WebSocketServer implements Stream {
                 e.printStackTrace();
             }
         }
-        for (PieceType[] pieceTypes : db.getBoard()) {
+        for (int i = 0; i < 8; i++) {
             JSONArray row = new JSONArray();
-            for (PieceType p : pieceTypes) {
-                row.add(p.toJSON());
+            for (int j = 0; j < 8; j++) {
+                row.add(board.get(i, j).toJSON());
             }
             boardArray.add(row);
         }
