@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 public class MinimaxTree {
-    private final int DEPTH_LIMIT = 6;
+    private final int DEPTH_LIMIT = 9;
     private Set<Node> rootChildren = new LinkedHashSet<>();
     private Node root;
     private Color me;
@@ -88,15 +88,30 @@ public class MinimaxTree {
         } else if (depth >= DEPTH_LIMIT) {
             calculateValue(node);
         } else {
-            for (Node child : node.getChildren())
+            for (Node child : node.getChildren()) {
                 dls(child, depth + 1);
+
+                //pruning
+                if (node.parent != null) {
+                    if (node.parent.isMax) {
+                        if (node.value < node.parent.value)
+                            break;
+                    } else {
+                        if (node.value > node.parent.value)
+                            break;
+                    }
+                }
+            }
+
         }
         if (node.parent != null) {
             if (node.parent.isMax) {
                 if (node.value > node.parent.value)
                     node.parent.value = node.value;
-            } else if (node.value < node.parent.value)
-                node.parent.value = node.value;
+            } else {
+                if (node.value < node.parent.value)
+                    node.parent.value = node.value;
+            }
         }
     }
 
@@ -109,7 +124,6 @@ public class MinimaxTree {
         Move preMove;
         boolean turnChanged;
         int value;
-        int u;
 
         Node(boolean isMax, Node parent, Board board
                 , Move preMove, boolean turnChanged) {
