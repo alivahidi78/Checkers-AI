@@ -35,6 +35,12 @@ public class Move {
     }
 
     @Override
+    public String toString() {
+        return "[ " + fromRow + " ," + fromCol + " ] ->" +
+                " [ " + toRow + " ," + toCol + " ]";
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(fromRow, fromCol, toRow, toCol);
     }

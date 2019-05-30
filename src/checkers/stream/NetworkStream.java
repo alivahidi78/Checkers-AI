@@ -90,7 +90,6 @@ public class NetworkStream extends WebSocketServer implements Stream {
         }
         object.put("board", boardArray);
         object.put("type", "board");
-        System.err.println(db.getTurn().color);
         socket.send(object.toJSONString());
     }
 

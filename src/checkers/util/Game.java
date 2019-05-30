@@ -34,6 +34,7 @@ public class Game {
 
     public void start(Stream stream, Color playerColor, boolean isPvC) {
         this.stream = stream;
+        Logger logger = new Logger("log.txt");
         player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
         if (isPvC)
             player2 = new AIPlayer(this, "Computer", playerColor.not());
@@ -41,17 +42,24 @@ public class Game {
             player2 = new HumanPlayer(this,
                     "" + playerColor.not() + " Player", playerColor.not());
         db.initialize(player1, player2);
+        logger.log("Game started");
         while (!isGameFinished()) {
             stream.printData();
-            Move move = db.getTurn().getNextMove();
+            Player turn = db.getTurn();
+            Move move = turn.getNextMove();
+            logger.log(turn.name + "'s Move:");
+            logger.log(move.toString());
             while (!isMoveValid(move)) {
                 System.out.println("Move not possible!");
+                logger.log("Invalid move");
                 move = db.getTurn().getNextMove();
+                logger.log(move.toString());
             }
             db.move(move, player1, player2);
         }
         stream.printData();
         System.out.println(winner + " WINS!");
+        logger.log(winner + " WON");
     }
 
     private boolean isGameFinished() {
