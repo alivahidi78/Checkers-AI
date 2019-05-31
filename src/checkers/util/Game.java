@@ -32,15 +32,23 @@ public class Game {
         return stream;
     }
 
-    public void start(Stream stream, Color playerColor, boolean isPvC) {
+    public void start(Stream stream, Color playerColor, int mode,
+                      int difficulty1, int difficulty2) {
         this.stream = stream;
         Logger logger = new Logger("log.txt");
-        player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
-        if (isPvC)
-            player2 = new AIPlayer(this, "Computer", playerColor.not());
-        else
-            player2 = new HumanPlayer(this,
-                    "" + playerColor.not() + " Player", playerColor.not());
+        switch (mode) {
+            case 1:
+                player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
+                player2 = new HumanPlayer(this, "" + playerColor.not() + " Player", playerColor.not());
+                break;
+            case 2:
+                player1 = new HumanPlayer(this, "" + playerColor + " Player", playerColor);
+                player2 = new AIPlayer(this, "Computer", playerColor.not(), difficulty1);
+                break;
+            default:
+                player1 = new AIPlayer(this, "Computer " + playerColor, playerColor, difficulty1);
+                player2 = new AIPlayer(this, "Computer " + playerColor.not(), playerColor.not(), difficulty2);
+        }
         db.initialize(player1, player2);
         logger.log("Game started");
         while (!isGameFinished()) {

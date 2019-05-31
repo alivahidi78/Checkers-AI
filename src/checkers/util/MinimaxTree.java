@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.Set;
 
 public class MinimaxTree {
-    private final int DEPTH_LIMIT = 9;
+    private final int DEPTH_LIMIT;
     private Set<Node> rootChildren = new LinkedHashSet<>();
     private Node root;
     private Color me;
 
-    public MinimaxTree(Board board, Color me, Move preMove, boolean turnChanged) {
+    public MinimaxTree(Board board, Color me, Move preMove
+            , boolean turnChanged, int depthLimit) {
         this.me = me;
         root = new Node(true, null, board, preMove, turnChanged);
+        this.DEPTH_LIMIT = depthLimit;
     }
 
     private void calculateValue(Node node) {
@@ -67,14 +69,15 @@ public class MinimaxTree {
                 }
             }
         }
-        node.value = (8 * h1 + 2 * h2 + h3);
+        node.value = (h1 + h2 + h3);
     }
 
     public Move dls_getMove() {
         dls(root, 0);
         for (Node node : rootChildren) {
-            if (node.value == root.value)
+            if (node.value == root.value) {
                 return node.preMove;
+            }
         }
         throw new RuntimeException("Best child not found");
     }
@@ -93,10 +96,10 @@ public class MinimaxTree {
 
                 //pruning
                 if (node.parent != null) {
-                    if (node.parent.isMax) {
+                    if (node.parent.isMax && !node.isMax) {
                         if (node.value < node.parent.value)
                             break;
-                    } else {
+                    } else if (!node.parent.isMax && node.isMax) {
                         if (node.value > node.parent.value)
                             break;
                     }
